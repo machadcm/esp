@@ -22,7 +22,7 @@ uint16_t dht22::setup(String json) {
 
 // configure from dev structure
 uint16_t dht22::setup(device_info *dev) {
-  DEBUG_PRINTLN("load data from device info struct"); 
+  DBG_PRINTLN("load data from device info struct"); 
   _pin = dev->_ports[0];
   strcpy(_name, dev->_name);
   _scheduler = dev->_scheduler;

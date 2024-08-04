@@ -46,7 +46,7 @@ uint16_t analogpowerinput::setup(String json) {
 
 // configure from dev structure
 uint16_t analogpowerinput::setup(device_info *dev) {
-  DEBUG_PRINTLN("load data from device info struct"); 
+  DBG_PRINTLN("load data from device info struct"); 
   _pin = dev->_ports[0];
   _powerpin = dev->_ports[1];
   strcpy(_name, dev->_name);
@@ -62,7 +62,7 @@ uint16_t analogpowerinput::setup(device_info *dev) {
 
 // set info config in device struct
 void analogpowerinput::copy(device_info *dev) {
-  DEBUG_PRINTLN("copy data to device info struct"); 
+  DBG_PRINTLN("copy data to device info struct"); 
   dev->_type = SENSOR_PORT_DRIVER;
   strcpy(dev->_name, _name);
   dev->_status = _status;

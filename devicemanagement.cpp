@@ -9,12 +9,22 @@
 #include "tdssensor.h"
 #include "turbiditysensor.h"
 
+
+devicemanagement::devicemanagement(espwifi *w) {
+  _wifi = w; 
+  // initialize device structure
+  for( int i=0; i< MAX_DEVICES; i++) _devices[i] = NULL;
+  // initialize tx buffer
+  for (int i=0; i<MAX_BUFFER; i++) _buffer[i] = "";
+  factoryreset();
+}
+
 // get chip id
 String devicemanagement::getChipId(void){
-  #if ( DEVICE_TYPE == DEVICE_ESP8266 ) 
+  #if ( DEVICE_TYPE == ESP8266 ) 
     return(String(ESP.getChipId()));
   #endif
-  #if ( DEVICE_TYPE == DEVICE_ESP32 ) 
+  #if ( DEVICE_TYPE == ESP32 ) 
     return(String(ESP.getEfuseMac() & 0xFF));
   #endif
 }    
@@ -54,16 +64,6 @@ void devicemanagement::send_data(void) {
     String data = s.substring(s.indexOf('{'));
     _wifi->send(target, data); 
   }
-}
-
-
-devicemanagement::devicemanagement(wifi *w) {
-  _wifi = w; 
-  // initialize device structure
-  for( int i=0; i< MAX_DEVICES; i++) _devices[i] = NULL;
-  // initialize tx buffer
-  for (int i=0; i<MAX_BUFFER; i++) _buffer[i] = "";
-  factoryreset();
 }
 
 // register device
@@ -148,55 +148,55 @@ void devicemanagement::target(String target) {
 int devicemanagement::add(uint8_t type) {
   // find first free driver
   int port = 0;
-  for(; port != NULL && port < MAX_DEVICES; port++ );
+  for(; _devices[port] != NULL && port < MAX_DEVICES; port++ );
   // if no port left return error
   if (port == MAX_DEVICES) return(-1);
   // create device
   switch(type) {
     case SENSOR_PORT_DRIVER:
-      DEBUG_SERIAL("devicemanagement::add driver");
+      DBG_PRINTLN("devicemanagement::add driver");
       _devices[port] = new driver(port);
       break;
     case SENSOR_ANALOG_INPUT:
-      DEBUG_SERIAL("devicemanagement::add analog input");
+      DBG_PRINTLN("devicemanagement::add analog input");
       _devices[port] = new analoginput(port);
       break;
     case SENSOR_DIGITAL_INPUT:
-      DEBUG_SERIAL("devicemanagement::add digital input");
+      DBG_PRINTLN("devicemanagement::add digital input");
       _devices[port] = new digitalinput(port);
       break;
     case SENSOR_TEMPERATURE_DHT22:
-      DEBUG_SERIAL("devicemanagement::add dht22");
+      DBG_PRINTLN("devicemanagement::add dht22");
       _devices[port] = new dht22(port);
       break;
     case SENSOR_TEMPERATURE_DS18B20:
-      DEBUG_SERIAL("devicemanagement::add ds18b20");
+      DBG_PRINTLN("devicemanagement::add ds18b20");
       _devices[port] = new ds18b20(port);
       break;
     case SENSOR_DISTANCE:
-      DEBUG_SERIAL("devicemanagement::add distance sensor");
+      DBG_PRINTLN("devicemanagement::add distance sensor");
       break;
     case SENSOR_FLOWMETER:
-      DEBUG_SERIAL("devicemanagement::add flowmeter");
+      DBG_PRINTLN("devicemanagement::add flowmeter");
       _devices[port] = new flowmeter(port);
       break;
     case SENSOR_PH:
-      DEBUG_SERIAL("devicemanagement::add phsensor");
+      DBG_PRINTLN("devicemanagement::add phsensor");
       _devices[port] = new phsensor(port);
       break;
     case SENSOR_TDS:
-      DEBUG_SERIAL("devicemanagement::add: tdssensor");
+      DBG_PRINTLN("devicemanagement::add: tdssensor");
       _devices[port] = new tdssensor(port);
       break;
     case SENSOR_TURBIDITY:
-      DEBUG_SERIAL("devicemanagement::add turbiditysensor");
+      DBG_PRINTLN("devicemanagement::add turbiditysensor");
       _devices[port] = new turbiditysensor(port);
       break;
     case MOTOR_DRIVER:
-      DEBUG_SERIAL("devicemanagement::add motor driver");
+      DBG_PRINTLN("devicemanagement::add motor driver");
       break;  
     default:
-      DEBUG_SERIAL("devicemanagement::add unknown");
+      DBG_PRINTLN("devicemanagement::add unknown");
       return(-1);
   }
   register_sensor(port);
@@ -262,11 +262,11 @@ unsigned long devicemanagement::scheduler(void) {
   for( int i=0; i< MAX_DEVICES; i++ ) 
     if(_devices[i] != NULL) {
       unsigned long t = _devices[i]->scheduler();
-//      DEBUG_SERIAL("Scheduler (devicemanagement) t: " + String(t) + "  (" + i + ")");
+//      DBG_SERIAL("Scheduler (devicemanagement) t: " + String(t) + "  (" + i + ")");
       if ( t < timer ) timer = t;
     }
   _waittime = timer;
-//  DEBUG_SERIAL("Scheduler (devicemanagement): " + String(_waittime) );
+//  DBG_SERIAL("Scheduler (devicemanagement): " + String(_waittime) );
   return(_waittime * 1000);
 }
 
@@ -346,7 +346,7 @@ String devicemanagement::jsondevicestatus(uint8_t id) {
 // json device operation
 uint16_t devicemanagement::operation(uint8_t id, String op, String json, String &res) {
 
-  //DEBUG_SERIAL("devicemanagement (operation): " + String(id) + " (" + op + ") - " + json + " : " + json);
+  //DBG_SERIAL("devicemanagement (operation): " + String(id) + " (" + op + ") - " + json + " : " + json);
 
   // check if valid id
   if(!isvalid(id) ) return(HTTP_UNAVAILABLE);

@@ -1,5 +1,5 @@
 #include <Arduino.h>
-#include "eeprom.h"
+#include "esp-eeprom.h"
 
 // constructor
 eeprom::eeprom(char *buffer, int length) { 

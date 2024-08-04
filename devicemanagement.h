@@ -3,7 +3,7 @@
 
 #include "define.h"
 //#include "utils.h"
-#include "wifi.h"
+#include "esp-wifi.h"
 #include "device.h"
 #include "phsensor.h"
 
@@ -14,19 +14,19 @@
 #define MAX_BUFFER        16
 
 
+/*
 
 #ifdef DEVICE_ESP8266 
 
-/*
  *  GPIO0 - 0
  *  GRIO2 - 2 - ONBOARD LED - 
- */
 
 
 const unsigned char boardSupportedPins[] = {0, 2, 4, 5, 14, 16};
 #define MAX_AVAILABLE_PORTS 6
 
 #endif
+ */
 
 
 
@@ -42,7 +42,7 @@ class devicemanagement : public utils {
     uint8_t _updated;
     // is update
     uint8_t _control;
-    wifi *_wifi;
+    espwifi *_wifi;
 
     unsigned long _lasttime;    // last execution time 
     unsigned long _waittime;    // current wait time 
@@ -67,7 +67,7 @@ class devicemanagement : public utils {
   protected:
     
   public:
-    devicemanagement(wifi *w);
+    devicemanagement(espwifi *w);
 
     // setup configuration
     void setup(void);

@@ -2,15 +2,12 @@
 #define _CONTROLLER_
 
 #include "define.h"
-#include "eeprom.h"
+#include "esp-eeprom.h"
 #include "device.h"
-#include "wifi.h"
-#include "webserver.h"
+#include "esp-wifi.h"
+#include "esp-webserver.h"
 #include "devicemanagement.h"
 #include "status.h"
-
-
-#define DEVICE_NOT_CONFIGURED 0x00
 
 
 #define MAX_SLEEP_TIME    100 
@@ -35,9 +32,9 @@ class controller : public utils {
     // define devices
     devicemanagement *_devices;
     // define wifi module
-    wifi *_wifi;    
+    espwifi *_wifi;    
     // define web server
-    webserver *_webserver;
+    espwebserver *_webserver;
     // wifi setup function
     uint8_t wifisetup(void);
 
@@ -51,7 +48,7 @@ class controller : public utils {
     
   public:
     // constructor
-    controller(wifi *w);
+    controller(espwifi *w);
     // destructor
     ~controller();
     // setup configuration

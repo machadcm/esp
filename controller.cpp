@@ -2,10 +2,10 @@
 #include "status.h"
 
 // constructor
-controller::controller(wifi *w) {
+controller::controller(espwifi *w) {
   _wifi = w;
   _devices = new devicemanagement(w);
-  _webserver = new webserver(_wifi, _devices);
+  _webserver = new espwebserver(_wifi, _devices);
   _status = STATUS_SETUP;
   _led.blink(Starting);
 }
@@ -18,7 +18,7 @@ controller::~controller() {
 
 // setup controller
 void controller::setup(void) {
-  DEBUG_SERIAL("Setup devices");
+  DBG_PRINTLN("Setup devices");
   // setup led
   _led.begin();
   // setup devices  
@@ -29,7 +29,6 @@ void controller::setup(void) {
   _status = wifisetup();
   // start webserver
   _webserver->start(_status);
-
 }
 
 uint8_t controller::wifisetup(void) {
@@ -50,7 +49,7 @@ uint8_t controller::wifisetup(void) {
 boolean controller::load(void) {
   info _info;
   eeprom _eeprom((char*)&_info, sizeof(info));;
-  DEBUG_SERIAL("Load data from EEPROM");
+  DBG_PRINTLN("Load data from EEPROM");
   // read from eeprom
   if (_eeprom.read() == EEPROM_OK) {
     _wifi->setcredentials(_info._ssid, _info._password);
@@ -65,7 +64,7 @@ boolean controller::load(void) {
     _wifi->isupdated(); 
     return(true);  
   }
-  DEBUG_SERIAL("Checksum error on EEPROM");
+  DBG_PRINTLN("Checksum error on EEPROM");
   return(false);
 }
 
@@ -81,17 +80,16 @@ boolean controller::save(void) {
   strcpy(_info._name, _devices->name());
   strcpy(_info._url, _devices->target());
 
-  Serial.println("Write data on EEPROM: " + String(sizeof(info)));
+  DBG_PRINTLN("Write data on EEPROM: " + String(sizeof(info)));
   eeprom _eeprom((char*)&_info, sizeof(info));
   int wres = _eeprom.write();
-  Serial.println("Data Writen: " + String(wres));
-  
+  DBG_PRINTLN("Data Writen: " + String(wres));
   return(wres > 0 ? true : false);
 }
 
 // reset device
 void controller::factoryreset(void) {
-  DEBUG_SERIAL("Factory reset!");
+  DBG_PRINTLN("Factory reset!");
   // set wifi default
   _wifi->setcredentials(DEFAULT_AP_SSID, DEFAULT_AP_PASSWORD);
   _devices->factoryreset();
@@ -108,7 +106,7 @@ void controller::loop(void) {
     delay(100);
   }
   // print ip
-  Serial.println("IP address: " + _wifi->ip());
+  DBG_PRINTLN("IP address: " + _wifi->ip());
   // register device
   _devices->registerdevice();
   // loop forever
@@ -138,6 +136,5 @@ void controller::loop(void) {
     _led.blink(Connected);
     // sleep 
     delay(sleep);
- 
   }
 }

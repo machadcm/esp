@@ -1,23 +1,30 @@
 #ifndef _DEFINE_
 #define _DEFINE_
 
+// define version
+#define VERSION           "v0.1.2402"
+
+// define device type, do not forget to change board type
+#define DEVICE_TYPE       ESP32
+//#define DEVICE_TYPE     ESP8266
+
+
 // set debug mode
 #define DEBUG 1
 
 // print debug info
-#ifdef DEBUG
-#define DEBUG_INIT(...)      Serial.begin(__VA_ARGS__)
-#define DEBUG_PRINTLN(...)   Serial.println(__VA_ARGS__)
-#define DEBUG_PRINT(...)     Serial.print(__VA_ARGS__)
-#define DEBUG_SERIAL(...)    Serial.println(__VA_ARGS__)
+#if ( DEBUG == 1 )
+#define DBG_INIT(...)      Serial.begin(__VA_ARGS__)
+#define DBG_PRINTLN(...)   Serial.println(__VA_ARGS__)
+#define DBG_PRINT(...)     Serial.print(__VA_ARGS__)
 #else
-#define DEBUG_INIT(...)
-#define DEBUG_PRINTLN(...)
-#define DEBUG_PRINT(...)
-#define DEBUG_SERIAL(...)
+#define DBG_INIT(...)
+#define DBG_PRINTLN(...)
+#define DBG_PRINT(...)
 #endif
 
 //#define uint16_t  unsigned int 
+//#define uint8 unsigned char
 
 #define NAME_LENGHT         20
 #define URL_LENGHT          100
@@ -29,13 +36,11 @@
 #define DEVICE_ESP8266    0x01
 #define DEVICE_ESP32      0x02
 
-// define device type
-#define DEVICE_TYPE       DEVICE_ESP32
-//define DEVICE_TYPE      DEVICE_ESP8266
+// device status
+#define DEVICE_NOT_CONFIGURED 0x00
 
-#define VERSION           "v0.1.2402"
 
-// status
+// port status
 #define STATUS_DISABLED             0x00
 #define STATUS_ENABLED              0x01
 #define STATUS_ENABLED_AP_MODE      0x10

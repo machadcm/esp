@@ -17,7 +17,7 @@ uint16_t digitalinput::type(void) { return(SENSOR_DIGITAL_INPUT); }
 // parse string and configure device
 uint16_t digitalinput::setup(String json) {
 
-  Serial.println("digitalinput:" + json);
+  DBG_PRINTLN("digitalinput:" + json);
 
   if (!jsonHasKey(json, "pin")) return(ERROR_MISSING_PARAMETER);
   // set pin
@@ -32,7 +32,7 @@ uint16_t digitalinput::setup(String json) {
 
 // configure from dev structure
 uint16_t digitalinput::setup(device_info *dev) {
-  DEBUG_PRINTLN("load data from device info struct"); 
+  DBG_PRINTLN("load data from device info struct"); 
   _pin = dev->_ports[0];
   strcpy(_name, dev->_name);
   _scheduler = dev->_scheduler;
@@ -46,7 +46,7 @@ uint16_t digitalinput::setup(device_info *dev) {
 
 // set info config in device struct
 void digitalinput::copy(device_info *dev) {
-  DEBUG_PRINTLN("copy data to device info struct"); 
+  DBG_PRINTLN("copy data to device info struct"); 
   dev->_type = SENSOR_PORT_DRIVER;
   strcpy(dev->_name, _name);
   dev->_status = _status;

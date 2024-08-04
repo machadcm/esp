@@ -1,4 +1,4 @@
-#include "webserver.h"
+#include "esp-webserver.h"
 
 /************************************************
 
@@ -13,17 +13,17 @@
 
 
 // pointer to WebWerver class
-webserver *webHandle;
+espwebserver *webHandle;
 
-#if ( DEVICE_TYPE == DEVICE_ESP8266 ) 
-webserver::webserver(wifi *w, devicemanagement *d, uint16_t port):ESP8266WebServer(port) {
+#if ( DEVICE_TYPE == ESP8266 ) 
+espwebserver::espwebserver(espwifi *w, devicemanagement *d, uint16_t port):ESP8266WebServer(port) {
   _wifi = w; 
   _devices = d;
   webHandle = this;
 }
 #endif
-#if ( DEVICE_TYPE == DEVICE_ESP32 ) 
-webserver::webserver(wifi *w, devicemanagement *d, uint16_t port):WebServer(port) {
+#if ( DEVICE_TYPE == ESP32 ) 
+espwebserver::espwebserver(espwifi *w, devicemanagement *d, uint16_t port):WebServer(port) {
   _wifi = w; 
   _devices = d;
   webHandle = this;
@@ -31,7 +31,7 @@ webserver::webserver(wifi *w, devicemanagement *d, uint16_t port):WebServer(port
 #endif
 
 // start web server
-void webserver::start(uint8_t status) {
+void espwebserver::start(uint8_t status) {
   // update status
   _status = status;
   //here the list of headers to be recorded
@@ -46,19 +46,19 @@ void webserver::start(uint8_t status) {
 }
 
 // register web handler
-void webserver::handlerregister(void) {
+void espwebserver::handlerregister(void) {
   on("/", HTTP_GET, [](){ webHandle->handler(); });
   onNotFound([](){ webHandle->handler(); });
 }
 
 // loop 
-void webserver::loop() { handleClient(); }
+void espwebserver::loop() { handleClient(); }
 
 // general handler 
-void webserver::handler() {
+void espwebserver::handler() {
   String uri = _currentUri;
   
-  DEBUG_SERIAL("WebServer Handler: " + uri + " method (" + method() + "), body:" + arg("plain"));
+  DBG_PRINTLN("WebServer Handler: " + uri + " method (" + method() + "), body:" + arg("plain"));
 
   switch(method()) {
     case 1: // GET
@@ -96,20 +96,20 @@ void webserver::handler() {
           if (uri.startsWith("/device/") ) jsonDeviceDel(uri, "/device/");
           else jsonNotFound();
         } else handlerNotFound();
-
+      break;
     default:
       break;  
   }
 }
 
 // return json system status
-void webserver::jsonSystemStatus(void) { sendjson(HTTP_SUCCESS, _devices->jsonstatus()); }
+void espwebserver::jsonSystemStatus(void) { sendjson(HTTP_SUCCESS, _devices->jsonstatus()); }
 
 // return json wifi statue
-void webserver::jsonWifiStatus(void) { sendjson(HTTP_SUCCESS, _wifi->jsonstatus()); }
+void espwebserver::jsonWifiStatus(void) { sendjson(HTTP_SUCCESS, _wifi->jsonstatus()); }
 
 // return json status port 
-void webserver::jsonDeviceStatus(String uri, String path) {
+void espwebserver::jsonDeviceStatus(String uri, String path) {
   // remove base path
   uri.replace(path, "");
   // if empty return all device status
@@ -120,43 +120,43 @@ void webserver::jsonDeviceStatus(String uri, String path) {
   if( _devices->isvalid(id) ) sendjson(HTTP_SUCCESS, _devices->jsondevicestatus(id));
   else {
     // else return error
-    DEBUG_SERIAL("webserver::jsonDeviceStatus: HTTP_BAD_REQUEST");
+    DBG_PRINTLN("webserver::jsonDeviceStatus: HTTP_BAD_REQUEST");
     sendjson(HTTP_BAD_REQUEST, "");
   }
 }
 
 // config system with json
-void webserver::jsonSystemConfig(String json) { sendjson(_devices->config(json), ""); }
+void espwebserver::jsonSystemConfig(String json) { sendjson(_devices->config(json), ""); }
 
 // save system configuration
-void webserver::jsonSystemSave(void) { 
+void espwebserver::jsonSystemSave(void) { 
   _devices->systemSave();
   sendjson(200, ""); 
 }
 
 // reset system 
-void webserver::jsonSystemReset(void) {
+void espwebserver::jsonSystemReset(void) {
   _devices->systemReset();
   sendjson(200, ""); 
 }
 
 // reset system 
-void webserver::jsonSystemFactoryReset(void) {
+void espwebserver::jsonSystemFactoryReset(void) {
   _devices->factoryreset();
   sendjson(200, ""); 
 }
 
 // config wifi with json
-void webserver::jsonWifiConfig(String json) { sendjson(_wifi->config(json), ""); }
+void espwebserver::jsonWifiConfig(String json) { sendjson(_wifi->config(json), ""); }
 
 // add device
-void webserver::jsonDeviceAdd(String json) { 
+void espwebserver::jsonDeviceAdd(String json) { 
   String s;
   sendjson(_devices->jsondeviceadd(json, s), s); 
 }
 
 // add device
-void webserver::jsonDeviceDel(String uri, String path) { 
+void espwebserver::jsonDeviceDel(String uri, String path) { 
   String s;
   // remove base path
   uri.replace(path, "");
@@ -164,27 +164,27 @@ void webserver::jsonDeviceDel(String uri, String path) {
   uint8_t id = uri.substring(0, uri.indexOf('/')).toInt();
   if( !_devices->isvalid(id) ) {
     sendjson(HTTP_BAD_REQUEST, "");
-    DEBUG_SERIAL("webserver::jsonDeviceDel " + uri + ", " + path );
+    DBG_PRINTLN("webserver::jsonDeviceDel " + uri + ", " + path );
   } 
   sendjson(_devices->operation(id, "del", "", s), s);
 }
 
 // config device
-void webserver::jsonDeviceConfig(String uri, String path, String json) { 
+void espwebserver::jsonDeviceConfig(String uri, String path, String json) { 
   // remove base path
   uri.replace(path, "");
   // get port from uri
   uint8_t id = uri.substring(0, uri.indexOf('/')).toInt();
   if( !_devices->isvalid(id) || json == "" ) {
     sendjson(HTTP_BAD_REQUEST, "");
-    DEBUG_SERIAL("webserver::jsonDeviceConfig " + uri + ", " + path );
+    DBG_PRINTLN("webserver::jsonDeviceConfig " + uri + ", " + path );
   } 
   sendjson(_devices->jsondeviceconfig(id, json), "");
 }
 
 // return json device opeation
-void webserver::jsonDeviceOperation(String uri, String path, String json) {
-  DEBUG_SERIAL("webserver::jsonDeviceOperation " + uri + ", " + path  + ", " + json );
+void espwebserver::jsonDeviceOperation(String uri, String path, String json) {
+  DBG_PRINTLN("webserver::jsonDeviceOperation " + uri + ", " + path  + ", " + json );
 
   String res = "";
   // remove base path
@@ -199,12 +199,12 @@ void webserver::jsonDeviceOperation(String uri, String path, String json) {
 
 
 // return json not found
-void webserver::jsonNotFound(void) { 
-  DEBUG_SERIAL("webserver (jsonNotFound): HTTP_NOT_FOUND");
+void espwebserver::jsonNotFound(void) { 
+  DBG_PRINTLN("webserver (jsonNotFound): HTTP_NOT_FOUND");
   sendjson(HTTP_NOT_FOUND, ""); 
 }
 
-void webserver::sendjson(uint16_t code, String json) {
+void espwebserver::sendjson(uint16_t code, String json) {
   String description;
   switch(code) {
     case HTTP_SUCCESS:
@@ -238,23 +238,23 @@ void webserver::sendjson(uint16_t code, String json) {
   String message = "{\"return\":" + String(code) + ",\"description\":\"" + description + "\"" +
               (json != "" ? ",\"data\":" + json : "") + "}";
   
-  DEBUG_SERIAL("webserver (sendjson): code:" + String(code) + ", " + message);
+  DBG_PRINTLN("webserver (sendjson): code:" + String(code) + ", " + message);
   send(code, "application/json", message);
 }
 
 
 // print wifi configuration when in AP mode
-void webserver::handlerWifiConfig(boolean readonly) {
+void espwebserver::handlerWifiConfig(boolean readonly) {
   String s = httpHeader();
   s += "<ul>" + httpFieldInput("Configured SSID:","", _wifi->ssid(), true ) + "</ul>";
   s += "<form action=\"config/wifi\" method=\"post\"><ul>\r\n";
   s += "<li><label>Available networks:</label><select name=\"ssid\">\n\r";
   
   int networks = WiFi.scanNetworks(); 
-  DEBUG_SERIAL("Networks found: " + String(networks));
+  DBG_PRINTLN("Networks found: " + String(networks));
   for (int i = 0; i < networks; i++) {
     s+= "<option value=\"" + WiFi.SSID(i) + "\">" + WiFi.SSID(i) + "</option>\r\n"; 
-    DEBUG_SERIAL(i + ": " + WiFi.SSID(i) + ", " + String(WiFi.RSSI(i)) + ", " + String(WiFi.encryptionType(i)));
+    DBG_PRINTLN(i + ": " + WiFi.SSID(i) + ", " + String(WiFi.RSSI(i)) + ", " + String(WiFi.encryptionType(i)));
   }
   s += "</select></li>\r\n";
   s += httpFieldInput("Password:", "pass", "", (readonly ? true : false));
@@ -266,23 +266,23 @@ void webserver::handlerWifiConfig(boolean readonly) {
 }
 
 // wifi configuration updated
-void webserver::handlerUpdateWifiConfig() {
-  DEBUG_SERIAL("handlerUpdateWifiConfig : " + arg("ssid") + ", " + arg("pass"));
+void espwebserver::handlerUpdateWifiConfig() {
+  DBG_PRINTLN("handlerUpdateWifiConfig : " + arg("ssid") + ", " + arg("pass"));
   if ( _wifi->setcredentials(arg("ssid"), arg("pass")))  send(200, "text/html", "<h1>WiFi configuration updated, device will restart soon.</h1>");
-  DEBUG_SERIAL("webserver::handlerUpdateWifiConfig: HTTP_BAD_REQUEST");
+  DBG_PRINTLN("webserver::handlerUpdateWifiConfig: HTTP_BAD_REQUEST");
   send(HTTP_BAD_REQUEST, "text/html", "<h1>Fail to update WiFi configuration.</h1>");
 };
 
 // handler not found
-void webserver::handlerNotFound() {
-    DEBUG_SERIAL("WebServer (NotFound): " + _currentUri);
+void espwebserver::handlerNotFound() {
+  DBG_PRINTLN("WebServer (NotFound): " + _currentUri);
 
   send(200, "text/html", "<h1>Page not found</h1>");
 }
 
 
 // html header
-String webserver::httpHeader(void) {
+String espwebserver::httpHeader(void) {
   String s = "<!DOCTYPE HTML>\r\n";
   s += "<head><link rel=\"icon\" href=\"data:,\"></head>";
   s += "<style>";
@@ -297,12 +297,12 @@ String webserver::httpHeader(void) {
 }
 
 // html footer
-String webserver::httpFooter(void) {
+String espwebserver::httpFooter(void) {
   return("</body></html>");  
 }
 
 // html input field
-String webserver::httpFieldInput(String label, String fieldname, String value, bool readonly) {
+String espwebserver::httpFieldInput(String label, String fieldname, String value, bool readonly) {
   String s = "<li><label>" + label + "</label>";
   s += "<input type=\"text\"" + (fieldname == "" ? "" : " name=\"" + fieldname + "\" ") + 
                                 (value == "" ? "" : " value=\"" + value + "\" ") +
@@ -311,7 +311,7 @@ String webserver::httpFieldInput(String label, String fieldname, String value, b
 }
 
 // html select field
-String webserver::httpFieldSelect(String label, String fieldname, uint8_t value, bool readonly) {
+String espwebserver::httpFieldSelect(String label, String fieldname, uint8_t value, bool readonly) {
   String s = "<li><label>" + label + "</label>";
   s += "<select name=\"" + fieldname + "\">\r\n";
   s += "</select></li>\r\n";

@@ -36,7 +36,7 @@ uint16_t driver::setup(String json) {
 
 // configure from dev structure
 uint16_t driver::setup(device_info *dev) {
-  DEBUG_PRINTLN("load data from device info struct"); 
+  DBG_PRINTLN("load data from device info struct"); 
   _pin = dev->_ports[0];
   _mode = dev->_mode;
   strcpy(_name, dev->_name);
@@ -51,7 +51,7 @@ uint16_t driver::setup(device_info *dev) {
 
 // set info config in device struct
 void driver::copy(device_info *dev) {
-  DEBUG_PRINTLN("copy data to device info struct"); 
+  DBG_PRINTLN("copy data to device info struct"); 
   dev->_type = SENSOR_PORT_DRIVER;
   strcpy(dev->_name, _name);
   dev->_status = _status;
@@ -77,7 +77,7 @@ void driver::reset(void) {
 
 // set device enabled
 void driver::enable(void) {
-  DEBUG_PRINTLN("Enable pin " + String(_pin) ); 
+  DBG_PRINTLN("Enable pin " + String(_pin) ); 
   // set pin as output
   pinMode(_pin, OUTPUT);
   // enabled
@@ -101,7 +101,7 @@ uint16_t driver::on(void) {
 	if (_status == STATUS_ENABLED) {
 		_value = ( _mode == DEVICE_MODE_ON_UP ? HIGH : LOW);
 		digitalWrite(_pin, _value);
-    DEBUG_PRINTLN("Set ON pin " + String(_pin) + ", mode " + String(_mode) + ", id " + String(_id) ); 
+    DBG_PRINTLN("Set ON pin " + String(_pin) + ", mode " + String(_mode) + ", id " + String(_id) ); 
     _lastTime = now();
 		return(SUCCESS); 
 	}
@@ -114,7 +114,7 @@ uint16_t driver::off(void) {
 	if (_status == STATUS_ENABLED) {
 		_value = ( _mode == DEVICE_MODE_ON_UP ? LOW : HIGH);
 		digitalWrite(_pin, _value);
-    DEBUG_PRINTLN("Set OFF pin " + String(_pin) + ", mode " + String(_mode) + ", id " + String(_id) ); 
+    DBG_PRINTLN("Set OFF pin " + String(_pin) + ", mode " + String(_mode) + ", id " + String(_id) ); 
     _lastTime = now();
 		return(SUCCESS); 
 	}

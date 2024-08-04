@@ -1,7 +1,10 @@
 #ifndef _EEPROM_
 #define _EEPROM_
 
+//#include "define.h"
+#include <Arduino.h>
 #include <EEPROM.h>
+
 
 #define EEPROM_SIZE 1024
 
